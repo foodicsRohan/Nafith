@@ -2,9 +2,7 @@
 
 
 // CONSTANTS:
-
-const Authorization = "MnlkZnJjWVBNOVNyWW9lZU5pcWR5ZDNkVDJkdzdmeTVyWFJnMVhXajpPakRiVXFNSEVlcDdQUUVvVnRpTmJhUWpnYnc2MlUxTG5TU2c4cnBkRW1CZlRHQTFGSW9KNTNQY3dKMDVQWTllZW5aMTNHTExXZ2p4emg4eW9TQlo0aVViSTZSenI0WUI5QnR2amltVUF3eDE5M3lNU3RnS3ZFMHlhUjQyOWxldQ==";
-const secret_key = "rwGoV7s8dBY1J7zZjcJAjWOazEVs0dIsEw7KUHEkiBAwUcTnmQV8pgXkMCrXdIVNQLguTNTwQPW4aj81rM42TIJcY3UC22iOhuTDq1ZxsYa0IggWpu2qjf1LwhexDqrs";
+include 'NafithVariable.php';
 
 // CODE BASE
 /*
@@ -36,7 +34,7 @@ function getAccessToken(): string
 
    // Set cURL options
     curl_setopt_array($ch, array(
-        CURLOPT_URL => 'https://sandbox.nafith.sa/api/oauth/token/',
+        CURLOPT_URL => $NafithTokenURL,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,
@@ -47,12 +45,12 @@ function getAccessToken(): string
         CURLOPT_POSTFIELDS => $requestBody,
         CURLOPT_HTTPHEADER => array(
             'Content-Type: application/x-www-form-urlencoded',
-            'Authorization:Basic '. Authorization,
+            'Authorization:Basic '. $Authorization,
             'Host: sandbox.nafith.sa',
             'Content-Length: ' . $contentLength,
             'X-Nafith-Signature: T7SQpC+0HVUjkqjQFyHSw4iHqcEtWP3yyDqcIw/PziE=',
         ),
-        CURLOPT_SSL_VERIFYPEER => $file_path1, // Disable SSL certificate verification
+        CURLOPT_SSL_VERIFYPEER => null, // Disable SSL certificate verification
       ));
    // Execute the cURL request and capture the response
     $response = curl_exec($ch);
@@ -118,11 +116,13 @@ function getAccessToken(): string
 */
 function createSanad(string $filedata, string $accessToken , string $sigantor): string
 {
+    // Generate a timestamp
+    $timestamp = time() * 1000; // Convert the current UNIX timestamp to milliseconds
      // debugToScreen("filedata : $filedata");
   $curl = curl_init();
 
     curl_setopt_array($curl, array(
-        CURLOPT_URL => 'https://sandbox.nafith.sa/api/sanad-group/',
+        CURLOPT_URL => $CreateSanadURL,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,
@@ -133,7 +133,7 @@ function createSanad(string $filedata, string $accessToken , string $sigantor): 
         CURLOPT_POSTFIELDS => $filedata,
         CURLOPT_HTTPHEADER => array(
             'Content-Type: application/json',
-            'X-Nafith-Timestamp: 1662366796925',
+            'X-Nafith-Timestamp:'.$timestamp,
             'X-Nafith-Tracking-Id: 145',
             'X-Nafith-Signature:' . $sigantor,
             'Authorization: Bearer ' . $accessToken
@@ -162,8 +162,8 @@ function main(): void
     $method = "POST";
     $endpoint = "/api/sanad-group/";
     $sanad_object = "";
-    $secret_key = secret_key;
-    $unix_timestamp = "1662366796925";
+    // $secret_key = $secret_key;
+    $unix_timestamp =  time() * 1000;
     $MainContent = calculateHmacSignature($bodyData, $method, "nafith.sa", $endpoint, $sanad_object, $unix_timestamp, $secret_key);
     $documentId = createSanad($bodyData, $accessToken,$MainContent );
    // print "document id obtained is: " . $documentId; // Print the document ID
